@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Start Acessível | Aprenda no seu ritmo</title>
+<style>
+:root{--purple:#bd4fe2;--ink:#343c45;--muted:#65727e;--line:#c7ddf2;--bg:#f7f9fc;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Arial, sans-serif}
+header{background:#22252b;color:white;padding:12px max(20px,calc((100% - 1050px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}
+.logo{font-size:25px;font-weight:800;letter-spacing:-1px}.logo span{color:#c653e8}
+header a{color:white;text-decoration:none;font-size:14px}
+main{max-width:1050px;margin:0 auto;padding:30px 20px 55px}
+.intro{background:#fff;border-radius:18px;padding:26px;margin-bottom:28px;box-shadow:0 5px 22px #24364b0c}
+.eyebrow{color:#8b3ca9;font-weight:bold;text-transform:uppercase;font-size:12px;letter-spacing:1px}
+h1{font-size:clamp(27px,4vw,38px);margin:8px 0}.intro p{color:var(--muted);max-width:700px;margin-bottom:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:22px 0}
+.toolbar h2{margin:0;font-size:24px}.controls{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;border-radius:9px;padding:10px 12px;border:1px solid #cbd3dd;background:white;color:var(--ink)}
+input{min-width:190px}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #f3b64b;outline-offset:2px}
+.progress{height:9px;background:#e7eaf0;border-radius:20px;overflow:hidden;margin:10px 0 5px}.progress div{height:100%;width:0;background:var(--purple);transition:width .2s}
+.summary{font-size:14px;color:var(--muted)}
+.course{background:var(--card);border:1px solid #e8edf3;border-radius:13px;padding:17px 18px;margin:12px 0;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.course h3{margin:0 0 4px;font-size:17px}.course p{margin:0;color:var(--muted);font-size:14px}
+.course button{background:var(--purple);color:white;border:0;font-weight:bold;padding:10px 16px}
+.course button:hover{background:#9f35c6}.status{font-size:13px;color:#687580;margin-top:6px}
+.empty{padding:30px;text-align:center;color:var(--muted);background:white;border-radius:12px}
+footer{text-align:center;color:var(--muted);padding:25px 12px;border-top:1px solid #e5eaf0;font-size:13px}
+.access{position:fixed;right:14px;bottom:14px;background:#292d35;color:#fff;border:0;border-radius:50px;padding:12px 16px;box-shadow:0 3px 15px #0003}
+.large{font-size:19px} .high-contrast{--bg:#000;--ink:#fff;--muted:#f2f2f2;--card:#111;--line:#fff}
+.high-contrast .intro,.high-contrast .course,.high-contrast .empty{background:#111;border-color:#fff}
+@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.course{grid-template-columns:1fr}.course button{justify-self:start}.toolbar{align-items:flex-start;flex-direction:column}.controls{width:100%}.controls input{flex:1}}
+</style>
+</head>
+<body>
+<header><div class="logo">st<span>a</span>rt acessível</div><a href="#aulas">Ir para as aulas ↓</a></header>
+<main>
+<section class="intro" aria-labelledby="titulo">
+<div class="eyebrow">Aprendizagem para todos</div>
+<h1 id="titulo">Seu espaço de aprendizagem</h1>
+<p>Uma plataforma simples e acessível para acompanhar aulas, encontrar conteúdos e aprender no seu próprio ritmo. A inclusão começa quando a tecnologia é pensada para todas as pessoas.</p>
+</section>
+<div class="toolbar" id="aulas">
+<h2>Aulas disponíveis</h2>
+<div class="controls">
+<input id="search" type="search" placeholder="Buscar uma aula..." aria-label="Buscar uma aula">
+<select id="filter" aria-label="Filtrar aulas"><option value="all">Todas as aulas</option><option value="done">Concluídas</option><option value="todo">Em andamento</option></select>
+</div>
+</div>
+<div class="summary" id="summary" aria-live="polite"></div>
+<div class="progress" role="progressbar" aria-label="Progresso do curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressbar"><div id="progressfill"></div></div>
+<div id="courses"></div>
+</main>
+<button class="access" id="access" aria-pressed="false">Acessibilidade: A+ / contraste</button>
+<footer>Start Acessível • Tecnologia, autonomia e inclusão social.</footer>
+<script>
+const lessons=[
+["Desenvolvendo aplicativos","Conheça os primeiros passos para criar soluções digitais.",11],
+["Criando um modal de ajuda","Aprenda a oferecer orientação clara dentro de um aplicativo.",10],
+["Programando interações","Adicione ações simples para tornar a navegação mais intuitiva.",12],
+["Direitos digitais","Conheça direitos, segurança e cidadania no ambiente digital.",7],
+["Acessibilidade na Web","Entenda práticas para tornar páginas acessíveis.",9],
+["Tamanho das fontes","Veja como facilitar a leitura com textos ajustáveis.",9],
+["Leitura em voz alta","Conheça recursos que apoiam diferentes formas de leitura.",9],
+["Finalizando o projeto","Revise e apresente sua solução de inclusão digital.",9]
+];
+let completed=new Set(JSON.parse(localStorage.getItem("startCompleted")||"[]"));
+const root=document.getElementById("courses");
+function render(){
+ const q=document.getElementById("search").value.toLocaleLowerCase("pt-BR");
+ const f=document.getElementById("filter").value;
+ const filtered=lessons.map((x,i)=>({...{name:x[0],desc:x[1],mins:x[2],i},done:completed.has(i)}))
+ .filter(x=>x.name.toLocaleLowerCase("pt-BR").includes(q)||x.desc.toLocaleLowerCase("pt-BR").includes(q))
+ .filter(x=>f==="all"||(f==="done"&&x.done)||(f==="todo"&&!x.done));
+ root.innerHTML="";
+ if(!filtered.length){root.innerHTML='<div class="empty">Nenhuma aula encontrada. Tente outra busca.</div>'}
+ filtered.forEach(x=>{
+  const el=document.createElement("article");el.className="course";
+  const info=document.createElement("div");
+  const h=document.createElement("h3");h.textContent=x.name;
+  const p=document.createElement("p");p.textContent=x.desc;
+  const s=document.createElement("div");s.className="status";s.textContent=`${x.mins} min • ${x.done?"Aula concluída":"Aula pendente"}`;
+  info.append(h,p,s);
+  const b=document.createElement("button");b.textContent=x.done?"Concluída ✓":"Marcar como concluída";
+  b.setAttribute("aria-label",(x.done?"Desmarcar ":"Concluir ")+x.name);
+  b.onclick=()=>{x.done?completed.delete(x.i):completed.add(x.i);localStorage.setItem("startCompleted",JSON.stringify([...completed]));render()};
+  el.append(info,b);root.append(el);
+ });
+ const pct=Math.round(completed.size/lessons.length*100);
+ document.getElementById("summary").textContent=`${completed.size} de ${lessons.length} aulas concluídas • ${pct}% do percurso`;
+ document.getElementById("progressfill").style.width=pct+"%";
+ document.getElementById("progressbar").setAttribute("aria-valuenow",pct);
+}
+document.getElementById("search").addEventListener("input",render);
+document.getElementById("filter").addEventListener("change",render);
+document.getElementById("access").addEventListener("click",()=>{
+ document.body.classList.toggle("high-contrast");
+ const active=document.body.classList.contains("high-contrast");
+ document.getElementById("access").setAttribute("aria-pressed",String(active));
+ document.body.classList.toggle("large",!active);
+});
+render();
+</script>
+</body></html>
